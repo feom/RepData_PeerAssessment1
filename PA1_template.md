@@ -23,7 +23,7 @@ df <- read.csv("activity.csv")
 
 ## 1.1 Process input data
 
-Process date column and print the first few records and a summary of the data set.
+Process date column and print the first few records.
 
 ```r
 df$date <- as.Date(df$date, "%Y-%m-%d")
@@ -40,21 +40,6 @@ head(df)
 ## 6    NA 2012-10-01       25
 ```
 
-```r
-summary(df)
-```
-
-```
-##      steps             date               interval     
-##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
-##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
-##  Median :  0.00   Median :2012-10-31   Median :1177.5  
-##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
-##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
-##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
-##  NA's   :2304
-```
-
 # 2. What is mean total number of steps taken per day?
 
 ## 2.1 Calculate the total number of steps taken per day
@@ -63,8 +48,8 @@ Calculate and display summary of the total number of steps taken per day ignorin
 
 ```r
 df.steps <- tapply(df$steps, df$date, Fun=sum, na.rm=True)
-by_day <- aggregate(steps ~ date, data = df, sum)
-summary(by_day)
+stepsByDay <- aggregate(steps ~ date, data = df, sum)
+summary(stepsByDay)
 ```
 
 ```
@@ -82,7 +67,7 @@ summary(by_day)
 Plot a histogram with the total number of steps taken each day.
 
 ```r
-ggplot(by_day, aes(steps)) + geom_histogram(fill = "green", colour = "blue", 
+ggplot(stepsByDay, aes(steps)) + geom_histogram(fill = "green", colour = "blue", 
     breaks = c(0, 2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000, 22500, 25000)) + labs(y = expression("Frequency")) + 
     labs(x = expression("number of steps per day")) + labs(title = expression("Histogram - Total number of steps taken each day"))
 ```
@@ -94,7 +79,7 @@ ggplot(by_day, aes(steps)) + geom_histogram(fill = "green", colour = "blue",
 Calculate and report the mean.  
 
 ```r
-meanSteps<-mean(by_day$steps)
+meanSteps<-mean(stepsByDay$steps)
 meanSteps
 ```
 
@@ -104,7 +89,7 @@ meanSteps
 Calculate and report the median.
 
 ```r
-medianSteps<-median(by_day$steps)
+medianSteps<-median(stepsByDay$steps)
 medianSteps
 ```
 
@@ -120,12 +105,12 @@ Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and 
 
 ```r
 # calculate the average number of steps per interval
-avg_interval <- aggregate(steps ~ interval, data = df, FUN = function(x) {
+avgPerInterval <- aggregate(steps ~ interval, data = df, FUN = function(x) {
     mean(x, na.rm = TRUE)
 })
 
-ggplot(avg_interval, aes(interval, steps)) + geom_line(colour = "blue", 
-    lwd = 1) + labs(title = expression("Time Series of the 5-minute interval and the average no steps taken"))
+ggplot(avgPerInterval, aes(interval, steps)) + geom_line(colour = "red", 
+    lwd = 2) + labs(title = expression("Time Series of the 5-minute interval and the average number of steps taken"))
 ```
 
 ![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
@@ -136,7 +121,7 @@ Find and report the interval with the maximum number of steps.
 
 ```r
 #find interval
-by_interval$interval[which.max(by_interval$steps)]
+avgPerInterval$interval[which.max(avgPerInterval$steps)]
 ```
 
 ```
@@ -145,7 +130,7 @@ by_interval$interval[which.max(by_interval$steps)]
 
 ```r
 # max. number of steps
-max(by_interval$steps)
+max(avgPerInterval$steps)
 ```
 
 ```
@@ -192,11 +177,11 @@ head(totalStepsPerDay)
 for (i in 1:length(df$steps)) {
     if (is.na(df[i, 1])) {
         
-        ## corresponding 5 minute interval
-        steps_average <- subset(by_interval, by_interval$interval == as.numeric(df[i,3]))$steps
+        ## 5 minute interval
+        stepsAverage <- subset(avgPerInterval, avgPerInterval$interval == as.numeric(df[i,3]))$steps
         
         ## Replace the missing value
-        df[i, 1] <- steps_average
+        df[i, 1] <- stepsAverage
     } else {
         df[i, 1] <- df[i, 1]
     }
@@ -229,9 +214,9 @@ Make a histogram of the total number of steps taken each day after imputation.
 
 
 ```r
-by_date <- aggregate(steps ~ date, data = df, sum)
+byDate <- aggregate(steps ~ date, data = df, sum)
 
-ggplot(by_date, aes(steps)) + geom_histogram(fill = "blue", colour = "green", 
+ggplot(byDate, aes(steps)) + geom_histogram(fill = "blue", colour = "green", 
     breaks = c(0, 2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000, 22500, 25000)) + labs(y = expression("Frequency")) + 
     labs(x = expression("Number of steps per day")) + labs(title = expression("Histogram of dataset after imputation"))
 ```
@@ -243,7 +228,7 @@ Calculate and report the mean and median total number of steps taken per day.
 Mean and Median of the new dataset are:
 
 ```r
-meanNew<-mean(by_date$steps)
+meanNew<-mean(byDate$steps)
 meanNew
 ```
 
@@ -252,7 +237,7 @@ meanNew
 ```
 
 ```r
-medianNew<-median(by_date$steps)
+medianNew<-median(byDate$steps)
 medianNew
 ```
 
